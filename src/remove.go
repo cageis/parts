@@ -15,7 +15,7 @@ type PartialsRemoveCommand struct {
 }
 
 // NewPartialsRemoveCommand creates a new remove command
-func NewPartialsRemoveCommand(aggregateFile string, commentChars string) PartialsRemoveCommand {
+func NewPartialsRemoveCommand(aggregateFile, commentChars string) PartialsRemoveCommand {
 	aggregateFile = ExpandTildePrefix(aggregateFile)
 	return PartialsRemoveCommand{aggregateFile, commentChars, false}
 }
@@ -38,7 +38,8 @@ func (p PartialsRemoveCommand) GetStartFlag() string {
 		return fmt.Sprintf("%s\n%s PARTIALS>>>>>\n%s", style.Start, style.Start, style.End)
 	}
 	// Single-character comment style with header block
-	return fmt.Sprintf("%s ============================\n%s PARTIALS>>>>>\n%s ============================", style.Start, style.Start, style.Start)
+	return fmt.Sprintf("%s ============================\n%s PARTIALS>>>>>\n%s ============================",
+		style.Start, style.Start, style.Start)
 }
 
 // GetEndFlag returns the end marker for this remove command
@@ -49,7 +50,8 @@ func (p PartialsRemoveCommand) GetEndFlag() string {
 		return fmt.Sprintf("%s\n%s PARTIALS<<<<<\n%s", style.Start, style.Start, style.End)
 	}
 	// Single-character comment style with footer block
-	return fmt.Sprintf("%s ============================\n%s PARTIALS<<<<<\n%s ============================", style.Start, style.Start, style.Start)
+	return fmt.Sprintf("%s ============================\n%s PARTIALS<<<<<\n%s ============================",
+		style.Start, style.Start, style.Start)
 }
 
 // Run executes the remove command
@@ -63,7 +65,7 @@ func (p PartialsRemoveCommand) Run() error {
 	if err != nil {
 		return fmt.Errorf("failed to read aggregate file '%s': %w", path, err)
 	}
-	
+
 	output := string(content)
 	startIndex := strings.Index(output, p.GetStartFlag())
 	endIndex := strings.Index(output, p.GetEndFlag())
@@ -84,10 +86,10 @@ func (p PartialsRemoveCommand) Run() error {
 		afterStart++
 	}
 	after := output[afterStart:]
-	
+
 	// Clean up any extra newlines at the end of before section
 	before = strings.TrimRight(before, "\n") + "\n"
-	
+
 	result := before + after
 
 	if p.dryRun {
@@ -102,7 +104,7 @@ func (p PartialsRemoveCommand) Run() error {
 		return nil
 	}
 
-	err = os.WriteFile(p.aggregateFile, []byte(result), 0644)
+	err = os.WriteFile(p.aggregateFile, []byte(result), 0600)
 	if err != nil {
 		return fmt.Errorf("failed to write aggregate file '%s': %w", p.aggregateFile, err)
 	}

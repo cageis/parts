@@ -1,9 +1,9 @@
 # Parts
 
-[![CI/CD Pipeline](https://github.com/yourusername/parts/actions/workflows/ci.yml/badge.svg)](https://github.com/yourusername/parts/actions/workflows/ci.yml)
-[![Code Quality](https://github.com/yourusername/parts/actions/workflows/quality.yml/badge.svg)](https://github.com/yourusername/parts/actions/workflows/quality.yml)
-[![Go Report Card](https://goreportcard.com/badge/github.com/yourusername/parts)](https://goreportcard.com/report/github.com/yourusername/parts)
-[![codecov](https://codecov.io/gh/yourusername/parts/branch/main/graph/badge.svg)](https://codecov.io/gh/yourusername/parts)
+[![CI/CD Pipeline](https://github.com/cageis/parts/actions/workflows/ci.yml/badge.svg)](https://github.com/cageis/parts/actions/workflows/ci.yml)
+[![Code Quality](https://github.com/cageis/parts/actions/workflows/quality.yml/badge.svg)](https://github.com/cageis/parts/actions/workflows/quality.yml)
+[![Go Report Card](https://goreportcard.com/badge/github.com/cageis/parts)](https://goreportcard.com/report/github.com/cageis/parts)
+[![codecov](https://codecov.io/gh/cageis/parts/branch/main/graph/badge.svg)](https://codecov.io/gh/cageis/parts)
 
 A Go utility for merging partial configuration files into an aggregate file. Designed primarily for managing SSH configurations by combining multiple partial config files into your main SSH config.
 

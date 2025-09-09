@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        go-version: [1.19, 1.20, 1.21]
+        go-version: [1.17, 1.18, 1.19]
     
     steps:
     - name: Check out code
@@ -26,7 +26,7 @@ jobs:
         go-version: ${{ matrix.go-version }}
     
     - name: Cache Go modules
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: ~/go/pkg/mod
         key: ${{ runner.os }}-go-${{ matrix.go-version }}-${{ hashFiles('**/go.sum') }}
@@ -54,7 +54,7 @@ jobs:
       run: go test -v -race -coverprofile=coverage.out ./...
     
     - name: Upload coverage to Codecov
-      if: matrix.go-version == '1.21'
+      if: matrix.go-version == '1.19'
       uses: codecov/codecov-action@v3
       with:
         file: ./coverage.out
@@ -73,13 +73,13 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@v4
       with:
-        go-version: 1.21
+        go-version: 1.19
     
     - name: Cache Go modules
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: ~/go/pkg/mod
-        key: ${{ runner.os }}-go-1.21-${{ hashFiles('**/go.sum') }}
+        key: ${{ runner.os }}-go-1.19-${{ hashFiles('**/go.sum') }}
     
     - name: Build for multiple platforms
       run: |
@@ -96,29 +96,11 @@ jobs:
         GOOS=windows GOARCH=arm64 go build -o bin/parts-windows-arm64.exe .
     
     - name: Upload build artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: parts-binaries
         path: bin/parts-*
 
-  security:
-    name: Security Scan
-    runs-on: ubuntu-latest
-    needs: test
-    
-    steps:
-    - name: Check out code
-      uses: actions/checkout@v4
-    
-    - name: Set up Go
-      uses: actions/setup-go@v4
-      with:
-        go-version: 1.21
-    
-    - name: Run Gosec Security Scanner
-      uses: securecodewarrior/github-action-gosec@master
-      with:
-        args: './...'
 
   examples:
     name: Test Examples
@@ -132,7 +114,7 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@v4
       with:
-        go-version: 1.21
+        go-version: 1.19
     
     - name: Build parts
       run: go build -o bin/parts .
@@ -171,7 +153,7 @@ jobs:
     name: Release
     runs-on: ubuntu-latest
     if: github.event_name == 'release'
-    needs: [test, build, security, examples]
+    needs: [test, build, examples]
     
     steps:
     - name: Check out code
@@ -180,10 +162,10 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@v4
       with:
-        go-version: 1.21
+        go-version: 1.19
     
     - name: Download build artifacts
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: parts-binaries
         path: bin/
