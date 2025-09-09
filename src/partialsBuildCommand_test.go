@@ -50,13 +50,13 @@ func TestPartialsBuildCommand_BasicFunctionality(t *testing.T) {
 }
 
 // testSetup creates a test environment with aggregate file and partial files
-func testSetup(t *testing.T) (string, string, PartialsBuildCommand) {
+func testSetup(t *testing.T) (aggregateFile string, partialsDir string, command PartialsBuildCommand) {
 	dir := t.TempDir()
-	partialsDir := filepath.Join(dir, "partials")
+	partialsDir = filepath.Join(dir, "partials")
 	if err := os.MkdirAll(partialsDir, 0755); err != nil {
 		t.Fatalf("Failed to create partials directory: %v", err)
 	}
-	aggregateFile := filepath.Join(dir, "agg")
+	aggregateFile = filepath.Join(dir, "agg")
 
 	originalContent := "# Original SSH config\nHost example.com\n    User test\n"
 	if err := os.WriteFile(aggregateFile, []byte(originalContent), 0600); err != nil {
@@ -69,19 +69,22 @@ func testSetup(t *testing.T) (string, string, PartialsBuildCommand) {
 		t.Fatalf("Failed to create partial file 2: %v", err)
 	}
 
-	return aggregateFile, partialsDir, NewPartialsBuildCommand(aggregateFile, partialsDir, "#")
+	command = NewPartialsBuildCommand(aggregateFile, partialsDir, "#")
+	return
 }
 
 // runCommandAndReadResult runs the command and returns the file content and length
-func runCommandAndReadResult(t *testing.T, command PartialsBuildCommand, aggregateFile, runName string) ([]byte, int) {
+func runCommandAndReadResult(t *testing.T, command PartialsBuildCommand, aggregateFile, runName string) (result []byte, length int) {
 	if err := command.Run(); err != nil {
 		t.Fatalf("%s run failed: %v", runName, err)
 	}
-	result, err := os.ReadFile(aggregateFile)
+	var err error
+	result, err = os.ReadFile(aggregateFile)
 	if err != nil {
 		t.Fatalf("Failed to read %s result: %v", runName, err)
 	}
-	return result, len(result)
+	length = len(result)
+	return
 }
 
 // verifyIdempotency checks that multiple runs produce identical results

@@ -38,7 +38,8 @@ func (p PartialsRemoveCommand) GetStartFlag() string {
 		return fmt.Sprintf("%s\n%s PARTIALS>>>>>\n%s", style.Start, style.Start, style.End)
 	}
 	// Single-character comment style with header block
-	return fmt.Sprintf("%s ============================\n%s PARTIALS>>>>>\n%s ============================", style.Start, style.Start, style.Start)
+	return fmt.Sprintf("%s ============================\n%s PARTIALS>>>>>\n%s ============================",
+		style.Start, style.Start, style.Start)
 }
 
 // GetEndFlag returns the end marker for this remove command
@@ -49,7 +50,8 @@ func (p PartialsRemoveCommand) GetEndFlag() string {
 		return fmt.Sprintf("%s\n%s PARTIALS<<<<<\n%s", style.Start, style.Start, style.End)
 	}
 	// Single-character comment style with footer block
-	return fmt.Sprintf("%s ============================\n%s PARTIALS<<<<<\n%s ============================", style.Start, style.Start, style.Start)
+	return fmt.Sprintf("%s ============================\n%s PARTIALS<<<<<\n%s ============================",
+		style.Start, style.Start, style.Start)
 }
 
 // Run executes the remove command
