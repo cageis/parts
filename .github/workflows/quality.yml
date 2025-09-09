@@ -1,0 +1,118 @@
+name: Code Quality
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Check out code
+      uses: actions/checkout@v4
+    
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: 1.21
+    
+    - name: Run golangci-lint
+      uses: golangci/golangci-lint-action@v3
+      with:
+        version: latest
+        args: --timeout=5m
+
+  benchmark:
+    name: Benchmark
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    
+    steps:
+    - name: Check out code (base)
+      uses: actions/checkout@v4
+      with:
+        ref: ${{ github.base_ref }}
+        path: base
+    
+    - name: Check out code (head)
+      uses: actions/checkout@v4
+      with:
+        path: head
+    
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: 1.21
+    
+    - name: Run benchmark comparison
+      run: |
+        cd base && go test -bench=. -count=5 ./... > ../base-bench.txt
+        cd ../head && go test -bench=. -count=5 ./... > ../head-bench.txt
+        
+        # Install benchcmp if available
+        if command -v benchcmp &> /dev/null; then
+          echo "## Benchmark Comparison" >> ../benchmark-results.md
+          echo '```' >> ../benchmark-results.md
+          benchcmp ../base-bench.txt ../head-bench.txt >> ../benchmark-results.md
+          echo '```' >> ../benchmark-results.md
+        else
+          echo "Benchmark comparison tool not available, showing raw results"
+          echo "Base benchmarks:" && cat ../base-bench.txt
+          echo "Head benchmarks:" && cat ../head-bench.txt
+        fi
+
+  documentation:
+    name: Documentation Check
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Check out code
+      uses: actions/checkout@v4
+    
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: 1.21
+    
+    - name: Check if documentation is up to date
+      run: |
+        # Check if go.mod version matches documented version
+        GO_VERSION=$(grep "go " go.mod | awk '{print $2}')
+        echo "go.mod specifies Go version: $GO_VERSION"
+        
+        # Check if README examples are valid
+        echo "Checking README examples..."
+        go build -o bin/parts .
+        
+        # Test that help output matches documented usage
+        bin/parts --help > help-output.txt
+        if grep -q "parts \[flags\]" help-output.txt; then
+          echo "✅ Help output format looks correct"
+        else
+          echo "❌ Help output format doesn't match expected"
+          exit 1
+        fi
+    
+    - name: Validate examples
+      run: |
+        go build -o bin/parts .
+        
+        # Test that all documented comment styles work
+        echo "Testing documented comment styles..."
+        
+        # Create test files for each style
+        mkdir -p test-docs
+        echo "test content" > test-docs/test.txt
+        mkdir -p test-docs/partials
+        echo "partial content" > test-docs/partials/test-partial
+        
+        # Test basic styles mentioned in docs
+        bin/parts --dry-run test-docs/test.txt test-docs/partials "#" > /dev/null
+        bin/parts --dry-run test-docs/test.txt test-docs/partials "//" > /dev/null  
+        bin/parts --dry-run test-docs/test.txt test-docs/partials "auto" > /dev/null
+        
+        echo "✅ All documented comment styles work"

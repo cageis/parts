@@ -1,8 +1,7 @@
 package main
 
-import "partey/src"
+import "parts/cmd"
 
 func main() {
-	command := src.PartialsCommand{Performable: src.NewPerformable()}
-	command.Run()
+	cmd.Execute()
 }

@@ -1,0 +1,9 @@
+Host dev-server
+    HostName dev.company.com
+    User developer
+    Port 2223
+
+Host staging
+    HostName staging.company.com
+    User deploy
+    Port 22

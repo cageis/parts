@@ -1,0 +1,35 @@
+# Main SSH Configuration
+# This is your existing SSH config
+
+Host personal-server
+    HostName myserver.com
+    User me
+    Port 22
+
+# Default settings
+Host *
+    ServerAliveInterval 60
+# ============================
+# PARTIALS>>>>>
+# ============================
+Host dev-server
+    HostName dev.company.com
+    User developer
+    Port 2223
+
+Host staging
+    HostName staging.company.com
+    User deploy
+    Port 22
+Host work-db
+    HostName db.company.com
+    User dbadmin
+    Port 2222
+
+Host work-app
+    HostName app.company.com
+    User deploy
+    IdentityFile ~/.ssh/work_rsa
+# ============================
+# PARTIALS<<<<<
+# ============================

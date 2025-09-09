@@ -1,0 +1,9 @@
+Host work-db
+    HostName db.company.com
+    User dbadmin
+    Port 2222
+
+Host work-app
+    HostName app.company.com
+    User deploy
+    IdentityFile ~/.ssh/work_rsa

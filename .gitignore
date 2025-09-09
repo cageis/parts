@@ -1,2 +1,9 @@
 .idea
 bin
+
+# Test coverage files
+coverage.out
+coverage.html
+
+# Claude Code AI assistant files
+CLAUDE.md
