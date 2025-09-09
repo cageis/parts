@@ -84,13 +84,11 @@ func runParts(cmd *cobra.Command, args []string) error {
 	}
 }
 
-func init() {
-	rootCmd.Flags().BoolVarP(&dryRun, "dry-run", "n", false, "preview changes without modifying files")
-	rootCmd.Flags().BoolVarP(&remove, "remove", "r", false, "remove partials section from aggregate file")
-}
-
 // Execute runs the root command
 func Execute() {
+	rootCmd.Flags().BoolVarP(&dryRun, "dry-run", "n", false, "preview changes without modifying files")
+	rootCmd.Flags().BoolVarP(&remove, "remove", "r", false, "remove partials section from aggregate file")
+
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 		os.Exit(1)

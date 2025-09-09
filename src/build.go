@@ -17,7 +17,7 @@ type PartialsBuildCommand struct {
 }
 
 // NewPartialsBuildCommand creates a new build command
-func NewPartialsBuildCommand(aggregateFile string, partialsDir string, commentChars string) PartialsBuildCommand {
+func NewPartialsBuildCommand(aggregateFile, partialsDir, commentChars string) PartialsBuildCommand {
 	aggregateFile = ExpandTildePrefix(aggregateFile)
 	partialsDir = ExpandTildePrefix(partialsDir)
 
@@ -97,14 +97,14 @@ func (p PartialsBuildCommand) Run() error {
 
 	// Each file: read contents into var to be written later.
 	for _, file := range files {
-		if file.IsDir() == true {
+		if file.IsDir() {
 			continue
 		}
 
 		partialPath := filepath.Join(p.partialsDir, file.Name())
-		fileContents, err := os.ReadFile(partialPath)
-		if err != nil {
-			return fmt.Errorf("failed to read partial file '%s': %w", partialPath, err)
+		fileContents, readErr := os.ReadFile(partialPath)
+		if readErr != nil {
+			return fmt.Errorf("failed to read partial file '%s': %w", partialPath, readErr)
 		}
 		output += string(fileContents)
 		output += "\n"

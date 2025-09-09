@@ -39,7 +39,7 @@ func TestRemoveCommand_NoPartialsSection(t *testing.T) {
 	testFile := filepath.Join(dir, "test.conf")
 	originalContent := "# Original config\nHost example\n    User test\n"
 
-	if err := os.WriteFile(testFile, []byte(originalContent), 0644); err != nil {
+	if err := os.WriteFile(testFile, []byte(originalContent), 0600); err != nil {
 		t.Fatalf("Failed to create test file: %v", err)
 	}
 
@@ -98,7 +98,7 @@ Host server1
 # ============================
 `
 
-	if err := os.WriteFile(testFile, []byte(contentWithPartials), 0644); err != nil {
+	if err := os.WriteFile(testFile, []byte(contentWithPartials), 0600); err != nil {
 		t.Fatalf("Failed to create test file: %v", err)
 	}
 
@@ -187,7 +187,7 @@ content
 			dir := t.TempDir()
 			testFile := filepath.Join(dir, "test")
 
-			if err := os.WriteFile(testFile, []byte(test.fileContent), 0644); err != nil {
+			if err := os.WriteFile(testFile, []byte(test.fileContent), 0600); err != nil {
 				t.Fatalf("Failed to create test file: %v", err)
 			}
 

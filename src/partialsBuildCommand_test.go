@@ -1,6 +1,7 @@
 package src
 
 import (
+	"bytes"
 	"os"
 	"path/filepath"
 	"strings"
@@ -17,13 +18,13 @@ func TestPartialsBuildCommand_BasicFunctionality(t *testing.T) {
 	aggregateFile := filepath.Join(dir, "agg")
 
 	// Create partial files
-	if err := os.WriteFile(filepath.Join(partialsDir, "partials1"), []byte("Partial 1"), 0644); err != nil {
+	if err := os.WriteFile(filepath.Join(partialsDir, "partials1"), []byte("Partial 1"), 0600); err != nil {
 		t.Fatalf("Failed to create partial file 1: %v", err)
 	}
-	if err := os.WriteFile(filepath.Join(partialsDir, "partials2"), []byte("Partial 2"), 0644); err != nil {
+	if err := os.WriteFile(filepath.Join(partialsDir, "partials2"), []byte("Partial 2"), 0600); err != nil {
 		t.Fatalf("Failed to create partial file 2: %v", err)
 	}
-	if err := os.WriteFile(aggregateFile, []byte{}, 0644); err != nil {
+	if err := os.WriteFile(aggregateFile, []byte{}, 0600); err != nil {
 		t.Fatalf("Failed to create aggregate file: %v", err)
 	}
 
@@ -39,7 +40,9 @@ func TestPartialsBuildCommand_BasicFunctionality(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to read result file: %v", err)
 	}
-	expected := "\n# ============================\n# PARTIALS>>>>>\n# ============================\nPartial 1\nPartial 2\n# ============================\n# PARTIALS<<<<<\n# ============================\n"
+	expected := "\n# ============================\n# PARTIALS>>>>>\n# ============================\n" +
+		"Partial 1\nPartial 2\n" +
+		"# ============================\n# PARTIALS<<<<<\n# ============================\n"
 
 	if string(actual) != expected {
 		t.Errorf("Expected:\n%s\nActual:\n%s", expected, string(actual))
@@ -56,13 +59,13 @@ func testSetup(t *testing.T) (string, string, PartialsBuildCommand) {
 	aggregateFile := filepath.Join(dir, "agg")
 
 	originalContent := "# Original SSH config\nHost example.com\n    User test\n"
-	if err := os.WriteFile(aggregateFile, []byte(originalContent), 0644); err != nil {
+	if err := os.WriteFile(aggregateFile, []byte(originalContent), 0600); err != nil {
 		t.Fatalf("Failed to create aggregate file: %v", err)
 	}
-	if err := os.WriteFile(filepath.Join(partialsDir, "partial1"), []byte("Host server1\n    User admin"), 0644); err != nil {
+	if err := os.WriteFile(filepath.Join(partialsDir, "partial1"), []byte("Host server1\n    User admin"), 0600); err != nil {
 		t.Fatalf("Failed to create partial file 1: %v", err)
 	}
-	if err := os.WriteFile(filepath.Join(partialsDir, "partial2"), []byte("Host server2\n    User root"), 0644); err != nil {
+	if err := os.WriteFile(filepath.Join(partialsDir, "partial2"), []byte("Host server2\n    User root"), 0600); err != nil {
 		t.Fatalf("Failed to create partial file 2: %v", err)
 	}
 
@@ -70,7 +73,7 @@ func testSetup(t *testing.T) (string, string, PartialsBuildCommand) {
 }
 
 // runCommandAndReadResult runs the command and returns the file content and length
-func runCommandAndReadResult(t *testing.T, command PartialsBuildCommand, aggregateFile string, runName string) ([]byte, int) {
+func runCommandAndReadResult(t *testing.T, command PartialsBuildCommand, aggregateFile, runName string) ([]byte, int) {
 	if err := command.Run(); err != nil {
 		t.Fatalf("%s run failed: %v", runName, err)
 	}
@@ -83,10 +86,10 @@ func runCommandAndReadResult(t *testing.T, command PartialsBuildCommand, aggrega
 
 // verifyIdempotency checks that multiple runs produce identical results
 func verifyIdempotency(t *testing.T, first, second, third []byte, firstLen, secondLen, thirdLen int) {
-	if string(first) != string(second) {
+	if !bytes.Equal(first, second) {
 		t.Errorf("First run differs from second run:\nFirst: %q\nSecond: %q", string(first), string(second))
 	}
-	if string(second) != string(third) {
+	if !bytes.Equal(second, third) {
 		t.Errorf("Second run differs from third run:\nSecond: %q\nThird: %q", string(second), string(third))
 	}
 	if firstLen != secondLen || secondLen != thirdLen {
@@ -107,7 +110,7 @@ func TestPartialsBuildCommand_IdempotentEditing(t *testing.T) {
 	verifyIdempotency(t, firstResult, secondResult, thirdResult, firstLength, secondLength, thirdLength)
 
 	// Test adding new partial files
-	if err := os.WriteFile(filepath.Join(partialsDir, "partial3"), []byte("Host server3\n    User guest"), 0644); err != nil {
+	if err := os.WriteFile(filepath.Join(partialsDir, "partial3"), []byte("Host server3\n    User guest"), 0600); err != nil {
 		t.Fatalf("Failed to create partial file 3: %v", err)
 	}
 
@@ -115,7 +118,7 @@ func TestPartialsBuildCommand_IdempotentEditing(t *testing.T) {
 	resultWithNewPartial, lengthWithNewPartial := runCommandAndReadResult(t, command, aggregateFile, "With new partial")
 	finalResult, finalLength := runCommandAndReadResult(t, command, aggregateFile, "Final")
 
-	if string(resultWithNewPartial) != string(finalResult) {
+	if !bytes.Equal(resultWithNewPartial, finalResult) {
 		t.Errorf("Results differ after adding new partial file:\nBefore: %q\nAfter: %q",
 			string(resultWithNewPartial), string(finalResult))
 	}
@@ -140,7 +143,7 @@ func TestPartialsBuildCommand_ErrorHandling(t *testing.T) {
 	t.Run("NonexistentPartialsDirectory", func(t *testing.T) {
 		dir := t.TempDir()
 		aggregateFile := filepath.Join(dir, "agg")
-		if err := os.WriteFile(aggregateFile, []byte("test"), 0644); err != nil {
+		if err := os.WriteFile(aggregateFile, []byte("test"), 0600); err != nil {
 			t.Fatalf("Failed to create aggregate file: %v", err)
 		}
 
@@ -165,10 +168,10 @@ func TestPartialsBuildCommand_PreservesOriginalContent(t *testing.T) {
 	aggregateFile := filepath.Join(dir, "agg")
 
 	originalContent := "# My existing config\nHost personal\n    User me\n"
-	if err := os.WriteFile(aggregateFile, []byte(originalContent), 0644); err != nil {
+	if err := os.WriteFile(aggregateFile, []byte(originalContent), 0600); err != nil {
 		t.Fatalf("Failed to create aggregate file: %v", err)
 	}
-	if err := os.WriteFile(filepath.Join(partialsDir, "work"), []byte("Host work\n    User admin"), 0644); err != nil {
+	if err := os.WriteFile(filepath.Join(partialsDir, "work"), []byte("Host work\n    User admin"), 0600); err != nil {
 		t.Fatalf("Failed to create partial file: %v", err)
 	}
 
@@ -212,10 +215,10 @@ func TestPartialsBuildCommand_DryRun(t *testing.T) {
 	aggregateFile := filepath.Join(dir, "agg")
 
 	originalContent := "# Original SSH config\nHost example.com\n    User test\n"
-	if err := os.WriteFile(aggregateFile, []byte(originalContent), 0644); err != nil {
+	if err := os.WriteFile(aggregateFile, []byte(originalContent), 0600); err != nil {
 		t.Fatalf("Failed to create aggregate file: %v", err)
 	}
-	if err := os.WriteFile(filepath.Join(partialsDir, "partial1"), []byte("Host server1\n    User admin"), 0644); err != nil {
+	if err := os.WriteFile(filepath.Join(partialsDir, "partial1"), []byte("Host server1\n    User admin"), 0600); err != nil {
 		t.Fatalf("Failed to create partial file: %v", err)
 	}
 

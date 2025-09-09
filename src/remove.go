@@ -15,7 +15,7 @@ type PartialsRemoveCommand struct {
 }
 
 // NewPartialsRemoveCommand creates a new remove command
-func NewPartialsRemoveCommand(aggregateFile string, commentChars string) PartialsRemoveCommand {
+func NewPartialsRemoveCommand(aggregateFile, commentChars string) PartialsRemoveCommand {
 	aggregateFile = ExpandTildePrefix(aggregateFile)
 	return PartialsRemoveCommand{aggregateFile, commentChars, false}
 }

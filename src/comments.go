@@ -72,7 +72,7 @@ func DetectCommentStyle(filename string) string {
 
 // ResolveCommentStyle resolves the comment style based on input
 // Supports predefined styles, auto-detection (using "auto"), or custom characters
-func ResolveCommentStyle(input string, aggregateFile string) CommentStyle {
+func ResolveCommentStyle(input, aggregateFile string) CommentStyle {
 	// Handle auto-detection
 	if input == "auto" {
 		detectedStyle := DetectCommentStyle(aggregateFile)

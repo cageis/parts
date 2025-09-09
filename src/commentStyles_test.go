@@ -105,12 +105,20 @@ func TestPartialsBuildCommand_DifferentCommentStyles(t *testing.T) {
 		expectedStart string
 		expectedEnd   string
 	}{
-		{"Hash comments", "#", "# ============================\n# PARTIALS>>>>>\n# ============================", "# ============================\n# PARTIALS<<<<<\n# ============================"},
-		{"Slash comments", "//", "// ============================\n// PARTIALS>>>>>\n// ============================", "// ============================\n// PARTIALS<<<<<\n// ============================"},
-		{"Dash comments", "--", "-- ============================\n-- PARTIALS>>>>>\n-- ============================", "-- ============================\n-- PARTIALS<<<<<\n-- ============================"},
+		{"Hash comments", "#",
+			"# ============================\n# PARTIALS>>>>>\n# ============================",
+			"# ============================\n# PARTIALS<<<<<\n# ============================"},
+		{"Slash comments", "//",
+			"// ============================\n// PARTIALS>>>>>\n// ============================",
+			"// ============================\n// PARTIALS<<<<<\n// ============================"},
+		{"Dash comments", "--",
+			"-- ============================\n-- PARTIALS>>>>>\n-- ============================",
+			"-- ============================\n-- PARTIALS<<<<<\n-- ============================"},
 		{"Block comments", "/*", "/*\n/* PARTIALS>>>>>\n*/", "/*\n/* PARTIALS<<<<<\n*/"},
 		{"HTML comments", "<!--", "<!--\n<!-- PARTIALS>>>>>\n-->", "<!--\n<!-- PARTIALS<<<<<\n-->"},
-		{"Custom characters", "@@", "@@ ============================\n@@ PARTIALS>>>>>\n@@ ============================", "@@ ============================\n@@ PARTIALS<<<<<\n@@ ============================"},
+		{"Custom characters", "@@",
+			"@@ ============================\n@@ PARTIALS>>>>>\n@@ ============================",
+			"@@ ============================\n@@ PARTIALS<<<<<\n@@ ============================"},
 	}
 
 	for _, test := range tests {
@@ -172,10 +180,10 @@ func TestPartialsBuildCommand_AutoDetection(t *testing.T) {
 
 	// Test with a Python file
 	aggregateFile := filepath.Join(dir, "config.py")
-	if err := os.WriteFile(aggregateFile, []byte("# Original Python config\n"), 0644); err != nil {
+	if err := os.WriteFile(aggregateFile, []byte("# Original Python config\n"), 0600); err != nil {
 		t.Fatalf("Failed to create aggregate file: %v", err)
 	}
-	if err := os.WriteFile(filepath.Join(partialsDir, "partial1"), []byte("DEBUG = True"), 0644); err != nil {
+	if err := os.WriteFile(filepath.Join(partialsDir, "partial1"), []byte("DEBUG = True"), 0600); err != nil {
 		t.Fatalf("Failed to create partial file: %v", err)
 	}
 

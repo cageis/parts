@@ -58,10 +58,10 @@ func TestRunParts_DryRun(t *testing.T) {
 	aggregateFile := filepath.Join(dir, "agg")
 
 	originalContent := "# Original config\n"
-	if err := os.WriteFile(aggregateFile, []byte(originalContent), 0644); err != nil {
+	if err := os.WriteFile(aggregateFile, []byte(originalContent), 0600); err != nil {
 		t.Fatalf("Failed to create aggregate file: %v", err)
 	}
-	if err := os.WriteFile(filepath.Join(partialsDir, "partial1"), []byte("Host test"), 0644); err != nil {
+	if err := os.WriteFile(filepath.Join(partialsDir, "partial1"), []byte("Host test"), 0600); err != nil {
 		t.Fatalf("Failed to create partial file: %v", err)
 	}
 
@@ -114,10 +114,10 @@ func TestRunParts_Normal(t *testing.T) {
 	aggregateFile := filepath.Join(dir, "agg")
 
 	originalContent := "# Original config\n"
-	if err := os.WriteFile(aggregateFile, []byte(originalContent), 0644); err != nil {
+	if err := os.WriteFile(aggregateFile, []byte(originalContent), 0600); err != nil {
 		t.Fatalf("Failed to create aggregate file: %v", err)
 	}
-	if err := os.WriteFile(filepath.Join(partialsDir, "partial1"), []byte("Host test"), 0644); err != nil {
+	if err := os.WriteFile(filepath.Join(partialsDir, "partial1"), []byte("Host test"), 0600); err != nil {
 		t.Fatalf("Failed to create partial file: %v", err)
 	}
 
