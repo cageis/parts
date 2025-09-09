@@ -123,10 +123,10 @@ func TestPartialsBuildCommand_DifferentCommentStyles(t *testing.T) {
 			aggregateFile := filepath.Join(dir, "agg")
 
 			// Create test files
-			if err := os.WriteFile(aggregateFile, []byte("Original content\n"), 0644); err != nil {
+			if err := os.WriteFile(aggregateFile, []byte("Original content\n"), 0600); err != nil {
 				t.Fatalf("Failed to create aggregate file: %v", err)
 			}
-			if err := os.WriteFile(filepath.Join(partialsDir, "partial1"), []byte("Test content"), 0644); err != nil {
+			if err := os.WriteFile(filepath.Join(partialsDir, "partial1"), []byte("Test content"), 0600); err != nil {
 				t.Fatalf("Failed to create partial file: %v", err)
 			}
 

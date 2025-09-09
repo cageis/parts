@@ -102,7 +102,7 @@ func (p PartialsRemoveCommand) Run() error {
 		return nil
 	}
 
-	err = os.WriteFile(p.aggregateFile, []byte(result), 0644)
+	err = os.WriteFile(p.aggregateFile, []byte(result), 0600)
 	if err != nil {
 		return fmt.Errorf("failed to write aggregate file '%s': %w", p.aggregateFile, err)
 	}

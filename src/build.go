@@ -123,7 +123,7 @@ func (p PartialsBuildCommand) Run() error {
 		return nil
 	}
 
-	err = ioutil.WriteFile(p.aggregateFile, []byte(output), 0644)
+	err = ioutil.WriteFile(p.aggregateFile, []byte(output), 0600)
 	if err != nil {
 		return fmt.Errorf("failed to write aggregate file '%s': %w", p.aggregateFile, err)
 	}
