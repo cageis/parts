@@ -50,7 +50,7 @@ func TestPartialsBuildCommand_BasicFunctionality(t *testing.T) {
 }
 
 // testSetup creates a test environment with aggregate file and partial files
-func testSetup(t *testing.T) (aggregateFile string, partialsDir string, command PartialsBuildCommand) {
+func testSetup(t *testing.T) (aggregateFile, partialsDir string, command PartialsBuildCommand) {
 	dir := t.TempDir()
 	partialsDir = filepath.Join(dir, "partials")
 	if err := os.MkdirAll(partialsDir, 0755); err != nil {
