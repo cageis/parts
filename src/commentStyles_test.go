@@ -100,8 +100,8 @@ func TestResolveCommentStyle_AutoDetection(t *testing.T) {
 
 func TestPartialsBuildCommand_DifferentCommentStyles(t *testing.T) {
 	tests := []struct {
-		name         string
-		commentStyle string
+		name          string
+		commentStyle  string
 		expectedStart string
 		expectedEnd   string
 	}{
@@ -132,7 +132,7 @@ func TestPartialsBuildCommand_DifferentCommentStyles(t *testing.T) {
 
 			// Test the command
 			command := NewPartialsBuildCommand(aggregateFile, partialsDir, test.commentStyle)
-			
+
 			// Check marker generation
 			if command.GetStartFlag() != test.expectedStart {
 				t.Errorf("Expected start flag %q, got %q", test.expectedStart, command.GetStartFlag())

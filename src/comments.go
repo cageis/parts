@@ -13,16 +13,16 @@ type CommentStyle struct {
 
 // Predefined comment styles for different file types
 var commentStyles = map[string]CommentStyle{
-	"#":     {Start: "#", End: ""},          // Shell, Python, YAML, etc.
-	"//":    {Start: "//", End: ""},         // Go, JavaScript, C++, etc.
-	"--":    {Start: "--", End: ""},         // SQL, Lua, Haskell, etc.
-	"/*":    {Start: "/*", End: "*/"},       // C, CSS, etc.
-	";":     {Start: ";", End: ""},          // Lisp, INI files, etc.
-	"%":     {Start: "%", End: ""},          // LaTeX, Erlang, etc.
-	"<!--":  {Start: "<!--", End: "-->"},    // HTML, XML, etc.
-	"'":     {Start: "'", End: ""},          // VB, some config files
-	"rem":   {Start: "rem", End: ""},        // Batch files
-	"::":    {Start: "::", End: ""},         // Batch files (alternate)
+	"#":    {Start: "#", End: ""},       // Shell, Python, YAML, etc.
+	"//":   {Start: "//", End: ""},      // Go, JavaScript, C++, etc.
+	"--":   {Start: "--", End: ""},      // SQL, Lua, Haskell, etc.
+	"/*":   {Start: "/*", End: "*/"},    // C, CSS, etc.
+	";":    {Start: ";", End: ""},       // Lisp, INI files, etc.
+	"%":    {Start: "%", End: ""},       // LaTeX, Erlang, etc.
+	"<!--": {Start: "<!--", End: "-->"}, // HTML, XML, etc.
+	"'":    {Start: "'", End: ""},       // VB, some config files
+	"rem":  {Start: "rem", End: ""},     // Batch files
+	"::":   {Start: "::", End: ""},      // Batch files (alternate)
 }
 
 // File extension to comment style mapping for auto-detection
@@ -80,12 +80,12 @@ func ResolveCommentStyle(input string, aggregateFile string) CommentStyle {
 			return style
 		}
 	}
-	
+
 	// Check if it's a predefined style
 	if style, exists := commentStyles[input]; exists {
 		return style
 	}
-	
+
 	// Treat as custom comment character(s) - backward compatibility
 	return CommentStyle{Start: input, End: ""}
 }

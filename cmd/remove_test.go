@@ -38,7 +38,7 @@ func TestRemoveCommand_NoPartialsSection(t *testing.T) {
 	dir := t.TempDir()
 	testFile := filepath.Join(dir, "test.conf")
 	originalContent := "# Original config\nHost example\n    User test\n"
-	
+
 	if err := os.WriteFile(testFile, []byte(originalContent), 0644); err != nil {
 		t.Fatalf("Failed to create test file: %v", err)
 	}
@@ -57,9 +57,9 @@ func TestRemoveCommand_NoPartialsSection(t *testing.T) {
 	originalDryRun := dryRun
 	remove = true
 	dryRun = true
-	defer func() { 
+	defer func() {
 		remove = originalRemove
-		dryRun = originalDryRun 
+		dryRun = originalDryRun
 	}()
 
 	cmd.SetArgs([]string{testFile, "#"})
@@ -84,7 +84,7 @@ func TestRemoveCommand_WithPartialsSection(t *testing.T) {
 	// Given - file with partials section
 	dir := t.TempDir()
 	testFile := filepath.Join(dir, "test.conf")
-	
+
 	contentWithPartials := `# Original config
 Host example
     User test
@@ -116,9 +116,9 @@ Host server1
 	originalDryRun := dryRun
 	remove = true
 	dryRun = false
-	defer func() { 
+	defer func() {
 		remove = originalRemove
-		dryRun = originalDryRun 
+		dryRun = originalDryRun
 	}()
 
 	cmd.SetArgs([]string{testFile, "#"})
@@ -205,9 +205,9 @@ content
 			originalDryRun := dryRun
 			remove = true
 			dryRun = true
-			defer func() { 
+			defer func() {
 				remove = originalRemove
-				dryRun = originalDryRun 
+				dryRun = originalDryRun
 			}()
 
 			cmd.SetArgs([]string{testFile, test.commentStyle})

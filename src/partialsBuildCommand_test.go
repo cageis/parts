@@ -242,7 +242,7 @@ func TestPartialsBuildCommand_DryRun(t *testing.T) {
 	command := NewPartialsBuildCommand(aggregateFile, partialsDir, "#")
 	command.SetDryRun(true)
 	err := command.Run()
-	
+
 	// Then
 	if err != nil {
 		t.Fatalf("Dry run should not fail: %v", err)
@@ -253,10 +253,9 @@ func TestPartialsBuildCommand_DryRun(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to read file after dry run: %v", err)
 	}
-	
+
 	if string(actualContent) != originalContent {
-		t.Errorf("File was modified in dry-run mode!\nExpected: %q\nActual: %q", 
+		t.Errorf("File was modified in dry-run mode!\nExpected: %q\nActual: %q",
 			originalContent, string(actualContent))
 	}
 }
-

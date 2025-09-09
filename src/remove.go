@@ -63,7 +63,7 @@ func (p PartialsRemoveCommand) Run() error {
 	if err != nil {
 		return fmt.Errorf("failed to read aggregate file '%s': %w", path, err)
 	}
-	
+
 	output := string(content)
 	startIndex := strings.Index(output, p.GetStartFlag())
 	endIndex := strings.Index(output, p.GetEndFlag())
@@ -84,10 +84,10 @@ func (p PartialsRemoveCommand) Run() error {
 		afterStart++
 	}
 	after := output[afterStart:]
-	
+
 	// Clean up any extra newlines at the end of before section
 	before = strings.TrimRight(before, "\n") + "\n"
-	
+
 	result := before + after
 
 	if p.dryRun {
