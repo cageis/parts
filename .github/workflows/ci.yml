@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        go-version: [1.19, 1.20, 1.21]
+        go-version: [1.17, 1.18, 1.19]
     
     steps:
     - name: Check out code
@@ -54,7 +54,7 @@ jobs:
       run: go test -v -race -coverprofile=coverage.out ./...
     
     - name: Upload coverage to Codecov
-      if: matrix.go-version == '1.21'
+      if: matrix.go-version == '1.19'
       uses: codecov/codecov-action@v3
       with:
         file: ./coverage.out
@@ -73,13 +73,13 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@v4
       with:
-        go-version: 1.21
+        go-version: 1.19
     
     - name: Cache Go modules
       uses: actions/cache@v3
       with:
         path: ~/go/pkg/mod
-        key: ${{ runner.os }}-go-1.21-${{ hashFiles('**/go.sum') }}
+        key: ${{ runner.os }}-go-1.19-${{ hashFiles('**/go.sum') }}
     
     - name: Build for multiple platforms
       run: |
@@ -113,7 +113,7 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@v4
       with:
-        go-version: 1.21
+        go-version: 1.19
     
     - name: Run Gosec Security Scanner
       uses: securecodewarrior/github-action-gosec@master
@@ -132,7 +132,7 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@v4
       with:
-        go-version: 1.21
+        go-version: 1.19
     
     - name: Build parts
       run: go build -o bin/parts .
@@ -180,7 +180,7 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@v4
       with:
-        go-version: 1.21
+        go-version: 1.19
     
     - name: Download build artifacts
       uses: actions/download-artifact@v3
