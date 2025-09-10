@@ -1,0 +1,6 @@
+# Development Environment
+127.0.0.1    api.dev.company.com
+127.0.0.1    app.dev.company.com
+127.0.0.1    auth.dev.company.com
+192.168.1.100 db.dev.company.com
+192.168.1.101 cache.dev.company.com

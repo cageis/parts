@@ -1,0 +1,7 @@
+# Standard system entries
+127.0.0.1	localhost
+255.255.255.255	broadcasthost
+::1             localhost
+
+# Your existing custom entries
+192.168.1.1     router.local

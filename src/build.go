@@ -108,6 +108,16 @@ func (p PartialsBuildCommand) Run() error {
 		if readErr != nil {
 			return fmt.Errorf("failed to read partial file '%s': %w", partialPath, readErr)
 		}
+
+		// Add source file path comment before each partial's content
+		style := p.getCommentStyle()
+		if style.End != "" {
+			// Multi-character comment style - need to close the comment
+			output += fmt.Sprintf("%s Source: %s %s\n", style.Start, partialPath, style.End)
+		} else {
+			// Single-character comment style
+			output += fmt.Sprintf("%s Source: %s\n", style.Start, partialPath)
+		}
 		output += string(fileContents)
 		output += "\n"
 	}

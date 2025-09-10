@@ -18,6 +18,13 @@ cd ssh-config
 cd ..
 
 echo
+echo "📁 Hosts File Example"
+echo "====================="
+cd hosts
+./run-example.sh
+cd ..
+
+echo
 echo "📁 JavaScript Config Example"
 echo "============================"
 cd javascript
