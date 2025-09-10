@@ -41,7 +41,10 @@ func TestPartialsBuildCommand_BasicFunctionality(t *testing.T) {
 		t.Fatalf("Failed to read result file: %v", err)
 	}
 	expected := "\n# ============================\n# PARTIALS>>>>>\n# ============================\n" +
-		"Partial 1\nPartial 2\n" +
+		"# Source: " + filepath.Join(partialsDir, "partials1") + "\n" +
+		"Partial 1\n" +
+		"# Source: " + filepath.Join(partialsDir, "partials2") + "\n" +
+		"Partial 2\n" +
 		"# ============================\n# PARTIALS<<<<<\n# ============================\n"
 
 	if string(actual) != expected {
