@@ -5,9 +5,10 @@ This directory contains practical examples demonstrating how to use Parts with d
 ## Directory Structure
 
 - `ssh-config/` - SSH configuration management (hash comments)
+- `hosts/` - System hosts file management (hash comments)
 - `javascript/` - JavaScript configuration merging (slash comments)
 - `css/` - CSS style merging (block comments)
-- `sql/` - SQL script merging (dash comments)
+- `sql/` - SQL script merging (dash comments)  
 - `python/` - Python configuration (auto-detection)
 - `batch/` - Windows batch file merging (rem comments)
 
@@ -26,6 +27,7 @@ make examples
 
 # Or run individual examples
 cd examples/ssh-config && ./run-example.sh
+cd examples/hosts && ./run-example.sh
 cd examples/javascript && ./run-example.sh
 # etc.
 ```
@@ -34,7 +36,7 @@ cd examples/javascript && ./run-example.sh
 
 | Style | File Types | Example |
 |-------|------------|---------|
-| `#` | Shell, Python, YAML, SSH config | `parts config ~/.ssh/config.d "#"` |
+| `#` | Shell, Python, YAML, SSH config, hosts | `parts ~/.ssh/config ~/.ssh/config.d "#"` |
 | `//` | JavaScript, Go, C++, Java | `parts app.js ./js-partials "//"` |
 | `--` | SQL, Lua, Haskell | `parts schema.sql ./sql-partials "auto"` |
 | `/*` | CSS, C | `parts styles.css ./css-partials "/*"` |

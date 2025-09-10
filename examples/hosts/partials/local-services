@@ -1,0 +1,5 @@
+# Local Development Services
+127.0.0.1    redis.local
+127.0.0.1    postgres.local
+127.0.0.1    elasticsearch.local
+127.0.0.1    minio.local

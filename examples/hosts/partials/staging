@@ -1,0 +1,5 @@
+# Staging Environment  
+10.0.2.50    api.staging.company.com
+10.0.2.51    app.staging.company.com
+10.0.2.52    auth.staging.company.com
+10.0.2.53    db.staging.company.com

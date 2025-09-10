@@ -66,7 +66,7 @@ ssh-dry: $(BUILD_DIR)/$(BINARY_NAME) ## Preview SSH config changes (dry-run mode
 	./$(BUILD_DIR)/$(BINARY_NAME) --dry-run ~/.ssh/config ~/.ssh/config.d "#"
 
 fmt: ## Format Go code
-	$(GO) fmt ./...
+	gofmt -s -w .
 
 vet: ## Run go vet
 	$(GO) vet ./...

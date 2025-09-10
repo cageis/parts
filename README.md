@@ -5,7 +5,7 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/cageis/parts)](https://goreportcard.com/report/github.com/cageis/parts)
 [![codecov](https://codecov.io/gh/cageis/parts/branch/main/graph/badge.svg)](https://codecov.io/gh/cageis/parts)
 
-A Go utility for merging partial configuration files into an aggregate file. Designed primarily for managing SSH configurations by combining multiple partial config files into your main SSH config.
+A Go utility for merging partial configuration files into an aggregate file. Perfect for managing configurations that don't support native includes - like SSH configs, `/etc/hosts`, and other system files.
 
 ## Features
 
@@ -13,16 +13,17 @@ A Go utility for merging partial configuration files into an aggregate file. Des
 - **Automatic Section Management**: Uses comment markers to manage the merged section
 - **Original Content Preservation**: Your existing configuration remains untouched
 - **Dynamic Updates**: Add/remove partial files and re-run to update the aggregate
+- **Source Tracking**: Each partial section includes a comment showing the source file path for easy identification
 - **Dry-Run Mode**: Preview changes without modifying files using `--dry-run` or `-n`
 - **Remove Mode**: Clean removal of partials sections using `--remove` or `-r`
-- **Multiple Comment Styles**: Support for various file types with appropriate comment syntax
+- **Language-Aware Comment Styles**: Automatically uses the correct comment syntax for your file type to ensure markers don't break functionality
 
 ## Installation
 
 ### From Source
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/cageis/parts.git
 cd parts
 make build
 ```
@@ -47,8 +48,9 @@ parts [--dry-run|-n] <aggregate-file> <partials-directory> <comment-style>
 parts --remove [--dry-run|-n] <aggregate-file> <comment-style>
 ```
 
-### SSH Configuration Examples
+### Common Configuration Examples
 
+**SSH Configuration:**
 ```bash
 # Build: Merge SSH config partials
 parts ~/.ssh/config ~/.ssh/config.d "#"
@@ -58,7 +60,18 @@ parts --remove ~/.ssh/config "#"
 
 # Preview changes without modifying files (dry-run)
 parts --dry-run ~/.ssh/config ~/.ssh/config.d "#"
-parts --remove --dry-run ~/.ssh/config "#"
+```
+
+**System Hosts File:**
+```bash
+# Build: Merge host file partials (useful for managing dev/staging/prod hosts)
+sudo parts /etc/hosts /etc/hosts.d "#"
+
+# Remove: Clean up partials section
+sudo parts --remove /etc/hosts "#"
+
+# Preview changes first (recommended for system files)
+sudo parts --dry-run /etc/hosts /etc/hosts.d "#"
 ```
 
 **Build mode** will:
@@ -111,9 +124,13 @@ This runs demonstrations of parts with various comment styles including SSH conf
 
 The process is idempotent - running it multiple times produces identical results without accumulating whitespace or duplicate content.
 
-## Example
+**Important:** The comment style parameter isn't cosmetic - it ensures the section markers use valid comment syntax for your file type. This prevents syntax errors, broken parsing, or execution issues that would occur if the wrong comment style was used.
 
-### Directory Structure
+## Examples
+
+### SSH Configuration Management
+
+#### Directory Structure
 ```
 ~/.ssh/
 ├── config                    # Main SSH config
@@ -123,7 +140,7 @@ The process is idempotent - running it multiple times produces identical results
     └── development          # Development environment hosts
 ```
 
-### Partial File Example (`~/.ssh/config.d/work-servers`)
+#### Partial File Example (`~/.ssh/config.d/work-servers`)
 ```
 Host work-db
     HostName db.company.com
@@ -135,7 +152,7 @@ Host work-app
     User deploy
 ```
 
-### Result in `~/.ssh/config`
+#### Result in `~/.ssh/config`
 ```
 # Your existing SSH config...
 Host personal
@@ -162,31 +179,71 @@ Host dev-server
 # ============================
 ```
 
-### Comment Block Examples
+### System Hosts File Management
 
-Different file types get appropriate comment structures:
+Perfect for managing development, staging, and production host mappings without editing the main system file directly.
 
-**CSS Files:**
-```css
-/*
-/* PARTIALS>>>>>
-*/
-.btn { padding: 10px 20px; }
-/*
-/* PARTIALS<<<<<
-*/
+#### Directory Structure
+```
+/etc/
+├── hosts                     # Main system hosts file
+└── hosts.d/                  # Partials directory
+    ├── development          # Dev environment hosts
+    ├── staging              # Staging hosts
+    ├── production           # Production hosts
+    └── local-services       # Local service mappings
 ```
 
-**SQL Files:**
-```sql
--- ============================
--- PARTIALS>>>>>
--- ============================
-CREATE TABLE products (id INT PRIMARY KEY);
--- ============================
--- PARTIALS<<<<<
--- ============================
+#### Partial File Example (`/etc/hosts.d/development`)
 ```
+# Development Environment
+127.0.0.1    api.dev.company.com
+127.0.0.1    app.dev.company.com
+192.168.1.100 db.dev.company.com
+192.168.1.101 cache.dev.company.com
+```
+
+#### Result in `/etc/hosts`
+```
+# Standard system entries
+127.0.0.1	localhost
+255.255.255.255	broadcasthost
+::1             localhost
+
+# ============================
+# PARTIALS>>>>>
+# ============================
+# Source: /etc/hosts.d/development
+# Development Environment
+127.0.0.1    api.dev.company.com
+127.0.0.1    app.dev.company.com
+192.168.1.100 db.dev.company.com
+192.168.1.101 cache.dev.company.com
+# Source: /etc/hosts.d/production
+# Production Environment  
+10.0.1.50    api.company.com
+10.0.1.51    app.company.com
+# ============================
+# PARTIALS<<<<<
+# ============================
+```
+
+### Comment Styles by File Type
+
+Parts automatically chooses the right comment style for your file type to ensure the section markers are valid syntax. The markers need to be proper comments so they don't break syntax highlighting, parsing, or execution.
+
+| File Type | Comment Style | Example Usage | Marker Format |
+|-----------|---------------|---------------|---------------|
+| SSH Config, Hosts, Shell, Python | `#` | `parts ~/.ssh/config ~/.ssh/config.d "#"` | `# PARTIALS>>>>>` |
+| JavaScript, Go, C++, Java | `//` | `parts app.js ./js-partials "//"` | `// PARTIALS>>>>>` |
+| CSS, C-style blocks | `/*` | `parts styles.css ./css-partials "/*"` | `/* PARTIALS>>>>> */` |
+| SQL, Lua, Haskell | `--` | `parts schema.sql ./sql-partials "--"` | `-- PARTIALS>>>>>` |
+| HTML, XML | `<!--` | `parts index.html ./html-partials "<!--"` | `<!-- PARTIALS>>>>> -->` |
+| AutoLISP, Emacs Lisp | `;` | `parts config.el ./lisp-configs ";"` | `; PARTIALS>>>>>` |
+| MATLAB, TeX | `%` | `parts analysis.m ./matlab-scripts "%"` | `% PARTIALS>>>>>` |
+| Auto-detection | `auto` | `parts config.py ./python-configs "auto"` | *Detects from extension* |
+
+**Why different comment styles?** Each programming language and configuration format has its own comment syntax. Using the wrong comment style would create syntax errors or break your file's functionality.
 
 ## Development
 
@@ -218,7 +275,7 @@ make clean        # Clean build artifacts
 
 ## License
 
-[Add your license here]
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## Development & Contributing
 

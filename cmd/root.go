@@ -27,10 +27,14 @@ Operations:
   - Remove mode (--remove): Remove the partials section from the aggregate file
 
 Comment Style Support:
-  The comment-style parameter supports several formats:
+  The comment-style parameter ensures the section markers blend seamlessly with your file type:
+  - Use language-appropriate comments: "#" for SSH/shell, "//" for JavaScript, "/*" for CSS, etc.
+  - Auto-detection: "auto" (automatically picks the right style based on file extension)
   - Predefined styles: "#", "//", "--", "/*", ";", "%", "<!--", "'", "rem", "::"
-  - Auto-detection: "auto" (detects based on file extension)
-  - Custom characters: Any string (for backward compatibility)`,
+  - Custom characters: Any string (for special cases or backward compatibility)
+  
+  Why different comment styles? The markers need to be valid comments in your target file
+  so they don't interfere with syntax highlighting, parsing, or execution.`,
 		Example: `  # Build mode: Merge partials into aggregate file
   parts ~/.ssh/config ~/.ssh/config.d "#"
   parts app.js ./partials "//"

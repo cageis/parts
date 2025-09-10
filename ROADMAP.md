@@ -27,6 +27,11 @@ This document tracks planned improvements and features for the Parts project. It
 ### Essential Features
 - [ ] Add backup functionality (create `.bak` files before modification)
 
+### Documentation Clarity
+- [x] Clarify comment styles documentation to explain they're for language-appropriate delimiters (not user choice)
+- [x] Convert comment style examples to table format for better readability
+- [x] Improve explanation that comment styles are for hiding markers, not aesthetic preference
+
 ### Testing & Quality
 - [ ] Add benchmarks for performance testing
 - [ ] Create integration tests with real SSH config scenarios
