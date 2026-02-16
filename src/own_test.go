@@ -148,3 +148,78 @@ func TestPartialsOwnCommand_PreservesPermissions(t *testing.T) {
 		t.Errorf("Expected permissions 0755, got %o", info.Mode().Perm())
 	}
 }
+
+func TestPartialsOwnCommand_EmptyPartialsDir(t *testing.T) {
+	dir := t.TempDir()
+	partialsDir := filepath.Join(dir, "partials")
+	os.MkdirAll(partialsDir, 0755)
+	targetFile := filepath.Join(dir, "target")
+
+	cmd := NewPartialsOwnCommand(targetFile, partialsDir, "")
+	if err := cmd.Run(); err != nil {
+		t.Fatalf("Command failed: %v", err)
+	}
+
+	result, err := os.ReadFile(targetFile)
+	if err != nil {
+		t.Fatalf("Failed to read target: %v", err)
+	}
+
+	if string(result) != "" {
+		t.Errorf("Expected empty file for empty partials dir, got: %q", string(result))
+	}
+}
+
+func TestPartialsOwnCommand_MultiplePartialsOrdering(t *testing.T) {
+	dir := t.TempDir()
+	partialsDir := filepath.Join(dir, "partials")
+	os.MkdirAll(partialsDir, 0755)
+	targetFile := filepath.Join(dir, "target")
+
+	// Create 5 partials with intentionally unordered names
+	names := []string{"05-last", "01-first", "03-middle", "02-second", "04-fourth"}
+	for _, name := range names {
+		os.WriteFile(filepath.Join(partialsDir, name), []byte(name+"\n"), 0644)
+	}
+
+	cmd := NewPartialsOwnCommand(targetFile, partialsDir, "")
+	if err := cmd.Run(); err != nil {
+		t.Fatalf("Command failed: %v", err)
+	}
+
+	result, err := os.ReadFile(targetFile)
+	if err != nil {
+		t.Fatalf("Failed to read target: %v", err)
+	}
+
+	// os.ReadDir returns alphabetical order
+	expected := "01-first\n02-second\n03-middle\n04-fourth\n05-last\n"
+	if string(result) != expected {
+		t.Errorf("Expected alphabetical ordering:\n%q\nGot:\n%q", expected, string(result))
+	}
+}
+
+func TestPartialsOwnCommand_NoTrailingNewline(t *testing.T) {
+	dir := t.TempDir()
+	partialsDir := filepath.Join(dir, "partials")
+	os.MkdirAll(partialsDir, 0755)
+	targetFile := filepath.Join(dir, "target")
+
+	// Write partial WITHOUT trailing newline
+	os.WriteFile(filepath.Join(partialsDir, "part1"), []byte("no trailing newline"), 0644)
+
+	cmd := NewPartialsOwnCommand(targetFile, partialsDir, "")
+	if err := cmd.Run(); err != nil {
+		t.Fatalf("Command failed: %v", err)
+	}
+
+	result, err := os.ReadFile(targetFile)
+	if err != nil {
+		t.Fatalf("Failed to read target: %v", err)
+	}
+
+	// Should normalize to have a trailing newline
+	if string(result) != "no trailing newline\n" {
+		t.Errorf("Expected normalized trailing newline, got: %q", string(result))
+	}
+}
