@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"parts/src"
+	"github.com/cageis/parts/src"
 
 	"github.com/spf13/cobra"
 )
@@ -72,27 +72,36 @@ func runParts(cmd *cobra.Command, args []string) error {
 		aggregateFile := args[0]
 		commentStyle := args[1]
 
-		command := src.NewPartialsRemoveCommand(aggregateFile, commentStyle)
-		command.SetDryRun(dryRun)
-
-		return command.Run()
-	} else {
-		// Build mode: parts <aggregate-file> <partials-directory> <comment-style>
-		aggregateFile := args[0]
-		partialsDir := args[1]
-		commentStyle := args[2]
-
-		command := src.NewPartialsBuildCommand(aggregateFile, partialsDir, commentStyle)
+		command, err := src.NewPartialsRemoveCommand(aggregateFile, commentStyle)
+		if err != nil {
+			return err
+		}
 		command.SetDryRun(dryRun)
 
 		return command.Run()
 	}
+
+	// Build mode: parts <aggregate-file> <partials-directory> <comment-style>
+	aggregateFile := args[0]
+	partialsDir := args[1]
+	commentStyle := args[2]
+
+	command, err := src.NewPartialsBuildCommand(aggregateFile, partialsDir, commentStyle)
+	if err != nil {
+		return err
+	}
+	command.SetDryRun(dryRun)
+
+	return command.Run()
 }
 
 // Execute runs the root command
 func Execute() {
 	rootCmd.Flags().BoolVarP(&dryRun, "dry-run", "n", false, "preview changes without modifying files")
 	rootCmd.Flags().BoolVarP(&remove, "remove", "r", false, "remove partials section from aggregate file")
+
+	// Register manifest-driven subcommands
+	rootCmd.AddCommand(newApplyCmd())
 
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
