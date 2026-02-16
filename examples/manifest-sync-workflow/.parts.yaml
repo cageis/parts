@@ -1,0 +1,6 @@
+targets:
+  ssh:
+    target: ./output/ssh-config
+    partials: ./ssh/
+    comment: "#"
+    mode: merge

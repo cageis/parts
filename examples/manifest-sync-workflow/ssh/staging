@@ -1,0 +1,4 @@
+Host staging
+    HostName staging.example.com
+    User deploy
+    Port 22

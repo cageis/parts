@@ -1,0 +1,4 @@
+Host work
+    HostName work.example.com
+    User deploy
+    Port 22
