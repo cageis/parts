@@ -139,7 +139,10 @@ func TestPartialsBuildCommand_DifferentCommentStyles(t *testing.T) {
 			}
 
 			// Test the command
-			command := NewPartialsBuildCommand(aggregateFile, partialsDir, test.commentStyle)
+			command, err := NewPartialsBuildCommand(aggregateFile, partialsDir, test.commentStyle)
+			if err != nil {
+				t.Fatalf("Failed to create command: %v", err)
+			}
 
 			// Check marker generation
 			if command.GetStartFlag() != test.expectedStart {
@@ -188,7 +191,10 @@ func TestPartialsBuildCommand_AutoDetection(t *testing.T) {
 	}
 
 	// Use auto-detection
-	command := NewPartialsBuildCommand(aggregateFile, partialsDir, "auto")
+	command, err := NewPartialsBuildCommand(aggregateFile, partialsDir, "auto")
+	if err != nil {
+		t.Fatalf("Failed to create command: %v", err)
+	}
 	if err := command.Run(); err != nil {
 		t.Fatalf("Command failed: %v", err)
 	}

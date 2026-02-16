@@ -29,8 +29,11 @@ func TestPartialsBuildCommand_BasicFunctionality(t *testing.T) {
 	}
 
 	// When
-	command := NewPartialsBuildCommand(aggregateFile, partialsDir, "#")
-	err := command.Run()
+	command, err := NewPartialsBuildCommand(aggregateFile, partialsDir, "#")
+	if err != nil {
+		t.Fatalf("Failed to create command: %v", err)
+	}
+	err = command.Run()
 	if err != nil {
 		t.Fatalf("Command failed: %v", err)
 	}
@@ -72,7 +75,11 @@ func testSetup(t *testing.T) (aggregateFile, partialsDir string, command Partial
 		t.Fatalf("Failed to create partial file 2: %v", err)
 	}
 
-	command = NewPartialsBuildCommand(aggregateFile, partialsDir, "#")
+	var err error
+	command, err = NewPartialsBuildCommand(aggregateFile, partialsDir, "#")
+	if err != nil {
+		t.Fatalf("Failed to create command: %v", err)
+	}
 	return
 }
 
@@ -136,8 +143,11 @@ func TestPartialsBuildCommand_IdempotentEditing(t *testing.T) {
 
 func TestPartialsBuildCommand_ErrorHandling(t *testing.T) {
 	t.Run("NonexistentAggregateFile", func(t *testing.T) {
-		command := NewPartialsBuildCommand("/nonexistent/file", "/tmp", "#")
-		err := command.Run()
+		command, err := NewPartialsBuildCommand("/nonexistent/file", "/tmp", "#")
+		if err != nil {
+			t.Fatalf("Failed to create command: %v", err)
+		}
+		err = command.Run()
 		if err == nil {
 			t.Error("Expected error for nonexistent aggregate file, got nil")
 		}
@@ -153,8 +163,11 @@ func TestPartialsBuildCommand_ErrorHandling(t *testing.T) {
 			t.Fatalf("Failed to create aggregate file: %v", err)
 		}
 
-		command := NewPartialsBuildCommand(aggregateFile, "/nonexistent/dir", "#")
-		err := command.Run()
+		command, err := NewPartialsBuildCommand(aggregateFile, "/nonexistent/dir", "#")
+		if err != nil {
+			t.Fatalf("Failed to create command: %v", err)
+		}
+		err = command.Run()
 		if err == nil {
 			t.Error("Expected error for nonexistent partials directory, got nil")
 		}
@@ -182,7 +195,10 @@ func TestPartialsBuildCommand_PreservesOriginalContent(t *testing.T) {
 	}
 
 	// When
-	command := NewPartialsBuildCommand(aggregateFile, partialsDir, "#")
+	command, err := NewPartialsBuildCommand(aggregateFile, partialsDir, "#")
+	if err != nil {
+		t.Fatalf("Failed to create command: %v", err)
+	}
 	if err := command.Run(); err != nil {
 		t.Fatalf("Command failed: %v", err)
 	}
@@ -229,9 +245,12 @@ func TestPartialsBuildCommand_DryRun(t *testing.T) {
 	}
 
 	// When - run in dry-run mode
-	command := NewPartialsBuildCommand(aggregateFile, partialsDir, "#")
+	command, err := NewPartialsBuildCommand(aggregateFile, partialsDir, "#")
+	if err != nil {
+		t.Fatalf("Failed to create command: %v", err)
+	}
 	command.SetDryRun(true)
-	err := command.Run()
+	err = command.Run()
 
 	// Then
 	if err != nil {
@@ -247,5 +266,53 @@ func TestPartialsBuildCommand_DryRun(t *testing.T) {
 	if string(actualContent) != originalContent {
 		t.Errorf("File was modified in dry-run mode!\nExpected: %q\nActual: %q",
 			originalContent, string(actualContent))
+	}
+}
+
+func TestPartialsBuildCommand_PreservesFilePermissions(t *testing.T) {
+	// Given
+	dir := t.TempDir()
+	partialsDir := filepath.Join(dir, "partials")
+	if err := os.MkdirAll(partialsDir, 0755); err != nil {
+		t.Fatalf("Failed to create partials directory: %v", err)
+	}
+	aggregateFile := filepath.Join(dir, "agg")
+
+	// Create file with specific permissions (0644 = rw-r--r--)
+	originalContent := "# Original config\n"
+	if err := os.WriteFile(aggregateFile, []byte(originalContent), 0644); err != nil {
+		t.Fatalf("Failed to create aggregate file: %v", err)
+	}
+	if err := os.WriteFile(filepath.Join(partialsDir, "partial1"), []byte("Host test"), 0600); err != nil {
+		t.Fatalf("Failed to create partial file: %v", err)
+	}
+
+	// Verify original permissions
+	info, err := os.Stat(aggregateFile)
+	if err != nil {
+		t.Fatalf("Failed to stat aggregate file: %v", err)
+	}
+	originalMode := info.Mode()
+	if originalMode.Perm() != 0644 {
+		t.Fatalf("Expected original permissions 0644, got %o", originalMode.Perm())
+	}
+
+	// When
+	command, err := NewPartialsBuildCommand(aggregateFile, partialsDir, "#")
+	if err != nil {
+		t.Fatalf("Failed to create command: %v", err)
+	}
+	if err := command.Run(); err != nil {
+		t.Fatalf("Command failed: %v", err)
+	}
+
+	// Then - permissions should be preserved
+	info, err = os.Stat(aggregateFile)
+	if err != nil {
+		t.Fatalf("Failed to stat result file: %v", err)
+	}
+	resultMode := info.Mode()
+	if resultMode.Perm() != originalMode.Perm() {
+		t.Errorf("File permissions changed: expected %o, got %o", originalMode.Perm(), resultMode.Perm())
 	}
 }

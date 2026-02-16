@@ -2,7 +2,7 @@ package src
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"strings"
@@ -16,12 +16,19 @@ type PartialsBuildCommand struct {
 	dryRun        bool
 }
 
-// NewPartialsBuildCommand creates a new build command
-func NewPartialsBuildCommand(aggregateFile, partialsDir, commentChars string) PartialsBuildCommand {
-	aggregateFile = ExpandTildePrefix(aggregateFile)
-	partialsDir = ExpandTildePrefix(partialsDir)
+// NewPartialsBuildCommand creates a new build command.
+// Returns an error if path expansion fails.
+func NewPartialsBuildCommand(aggregateFile, partialsDir, commentChars string) (PartialsBuildCommand, error) {
+	expandedAgg, err := ExpandTildePrefix(aggregateFile)
+	if err != nil {
+		return PartialsBuildCommand{}, fmt.Errorf("failed to expand aggregate file path: %w", err)
+	}
+	expandedPartials, err := ExpandTildePrefix(partialsDir)
+	if err != nil {
+		return PartialsBuildCommand{}, fmt.Errorf("failed to expand partials directory path: %w", err)
+	}
 
-	return PartialsBuildCommand{aggregateFile, partialsDir, commentChars, false}
+	return PartialsBuildCommand{expandedAgg, expandedPartials, commentChars, false}, nil
 }
 
 // SetDryRun sets the dry-run mode for the build command
@@ -39,11 +46,11 @@ func (p PartialsBuildCommand) GetStartFlag() string {
 	style := p.getCommentStyle()
 	if style.End != "" {
 		// Multi-character comment style with proper header block
-		return fmt.Sprintf("%s\n%s PARTIALS>>>>>\n%s", style.Start, style.Start, style.End)
+		return fmt.Sprintf("%s\n%s %s\n%s", style.Start, style.Start, PartialStartMarker, style.End)
 	}
 	// Single-character comment style with header block
-	return fmt.Sprintf("%s ============================\n%s PARTIALS>>>>>\n%s ============================",
-		style.Start, style.Start, style.Start)
+	return fmt.Sprintf("%s %s\n%s %s\n%s %s",
+		style.Start, MarkerSeparator, style.Start, PartialStartMarker, style.Start, MarkerSeparator)
 }
 
 // GetEndFlag returns the end marker for this build command
@@ -51,11 +58,11 @@ func (p PartialsBuildCommand) GetEndFlag() string {
 	style := p.getCommentStyle()
 	if style.End != "" {
 		// Multi-character comment style with proper footer block
-		return fmt.Sprintf("%s\n%s PARTIALS<<<<<\n%s", style.Start, style.Start, style.End)
+		return fmt.Sprintf("%s\n%s %s\n%s", style.Start, style.Start, PartialEndMarker, style.End)
 	}
 	// Single-character comment style with footer block
-	return fmt.Sprintf("%s ============================\n%s PARTIALS<<<<<\n%s ============================",
-		style.Start, style.Start, style.Start)
+	return fmt.Sprintf("%s %s\n%s %s\n%s %s",
+		style.Start, MarkerSeparator, style.Start, PartialEndMarker, style.Start, MarkerSeparator)
 }
 
 // Run executes the build command
@@ -63,6 +70,12 @@ func (p PartialsBuildCommand) Run() error {
 	path, err := filepath.Abs(p.aggregateFile)
 	if err != nil {
 		return fmt.Errorf("failed to get absolute path for aggregate file '%s': %w", p.aggregateFile, err)
+	}
+
+	// Get original file permissions before reading
+	var originalMode fs.FileMode = 0600 // default if file doesn't exist
+	if info, statErr := os.Stat(path); statErr == nil {
+		originalMode = info.Mode()
 	}
 
 	agg, err := os.ReadFile(path)
@@ -92,7 +105,7 @@ func (p PartialsBuildCommand) Run() error {
 	output += p.GetStartFlag()
 	output += "\n"
 
-	files, err := ioutil.ReadDir(p.partialsDir)
+	files, err := os.ReadDir(p.partialsDir)
 	if err != nil {
 		return fmt.Errorf("failed to read partials directory '%s': %w", p.partialsDir, err)
 	}
@@ -135,10 +148,19 @@ func (p PartialsBuildCommand) Run() error {
 		return nil
 	}
 
-	err = ioutil.WriteFile(p.aggregateFile, []byte(output), 0600)
+	err = os.WriteFile(p.aggregateFile, []byte(output), originalMode)
 	if err != nil {
 		return fmt.Errorf("failed to write aggregate file '%s': %w", p.aggregateFile, err)
 	}
+
+	// Count partial files for success message
+	partialCount := 0
+	for _, f := range files {
+		if !f.IsDir() {
+			partialCount++
+		}
+	}
+	fmt.Printf("Merged %d partial(s) into '%s'\n", partialCount, p.aggregateFile)
 
 	return nil
 }

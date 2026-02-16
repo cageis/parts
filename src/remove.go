@@ -2,6 +2,7 @@ package src
 
 import (
 	"fmt"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"strings"
@@ -14,10 +15,14 @@ type PartialsRemoveCommand struct {
 	dryRun        bool
 }
 
-// NewPartialsRemoveCommand creates a new remove command
-func NewPartialsRemoveCommand(aggregateFile, commentChars string) PartialsRemoveCommand {
-	aggregateFile = ExpandTildePrefix(aggregateFile)
-	return PartialsRemoveCommand{aggregateFile, commentChars, false}
+// NewPartialsRemoveCommand creates a new remove command.
+// Returns an error if path expansion fails.
+func NewPartialsRemoveCommand(aggregateFile, commentChars string) (PartialsRemoveCommand, error) {
+	expandedAgg, err := ExpandTildePrefix(aggregateFile)
+	if err != nil {
+		return PartialsRemoveCommand{}, fmt.Errorf("failed to expand aggregate file path: %w", err)
+	}
+	return PartialsRemoveCommand{expandedAgg, commentChars, false}, nil
 }
 
 // SetDryRun sets the dry-run mode for the remove command
@@ -35,11 +40,11 @@ func (p PartialsRemoveCommand) GetStartFlag() string {
 	style := p.getCommentStyle()
 	if style.End != "" {
 		// Multi-character comment style with proper header block
-		return fmt.Sprintf("%s\n%s PARTIALS>>>>>\n%s", style.Start, style.Start, style.End)
+		return fmt.Sprintf("%s\n%s %s\n%s", style.Start, style.Start, PartialStartMarker, style.End)
 	}
 	// Single-character comment style with header block
-	return fmt.Sprintf("%s ============================\n%s PARTIALS>>>>>\n%s ============================",
-		style.Start, style.Start, style.Start)
+	return fmt.Sprintf("%s %s\n%s %s\n%s %s",
+		style.Start, MarkerSeparator, style.Start, PartialStartMarker, style.Start, MarkerSeparator)
 }
 
 // GetEndFlag returns the end marker for this remove command
@@ -47,11 +52,11 @@ func (p PartialsRemoveCommand) GetEndFlag() string {
 	style := p.getCommentStyle()
 	if style.End != "" {
 		// Multi-character comment style with proper footer block
-		return fmt.Sprintf("%s\n%s PARTIALS<<<<<\n%s", style.Start, style.Start, style.End)
+		return fmt.Sprintf("%s\n%s %s\n%s", style.Start, style.Start, PartialEndMarker, style.End)
 	}
 	// Single-character comment style with footer block
-	return fmt.Sprintf("%s ============================\n%s PARTIALS<<<<<\n%s ============================",
-		style.Start, style.Start, style.Start)
+	return fmt.Sprintf("%s %s\n%s %s\n%s %s",
+		style.Start, MarkerSeparator, style.Start, PartialEndMarker, style.Start, MarkerSeparator)
 }
 
 // Run executes the remove command
@@ -59,6 +64,12 @@ func (p PartialsRemoveCommand) Run() error {
 	path, err := filepath.Abs(p.aggregateFile)
 	if err != nil {
 		return fmt.Errorf("failed to get absolute path for aggregate file '%s': %w", p.aggregateFile, err)
+	}
+
+	// Get original file permissions before reading
+	var originalMode fs.FileMode = 0600 // default if file doesn't exist
+	if info, statErr := os.Stat(path); statErr == nil {
+		originalMode = info.Mode()
 	}
 
 	content, err := os.ReadFile(path)
@@ -104,11 +115,11 @@ func (p PartialsRemoveCommand) Run() error {
 		return nil
 	}
 
-	err = os.WriteFile(p.aggregateFile, []byte(result), 0600)
+	err = os.WriteFile(p.aggregateFile, []byte(result), originalMode)
 	if err != nil {
 		return fmt.Errorf("failed to write aggregate file '%s': %w", p.aggregateFile, err)
 	}
 
-	fmt.Printf("✅ Removed partials section from '%s'\n", p.aggregateFile)
+	fmt.Printf("Removed partials section from '%s'\n", p.aggregateFile)
 	return nil
 }

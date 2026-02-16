@@ -1,6 +1,6 @@
 package main
 
-import "parts/cmd"
+import "github.com/cageis/parts/cmd"
 
 func main() {
 	cmd.Execute()
