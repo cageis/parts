@@ -102,6 +102,7 @@ func Execute() {
 
 	// Register manifest-driven subcommands
 	rootCmd.AddCommand(newApplyCmd())
+	rootCmd.AddCommand(newManifestRemoveCmd())
 
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
