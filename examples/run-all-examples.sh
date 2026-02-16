@@ -53,5 +53,26 @@ cd sql
 cd ..
 
 echo
+echo "📁 Manifest Dotfiles Example"
+echo "============================"
+cd manifest-dotfiles
+./run-example.sh
+cd ..
+
+echo
+echo "📁 Manifest Sync Workflow Example"
+echo "================================="
+cd manifest-sync-workflow
+./run-example.sh
+cd ..
+
+echo
+echo "📁 Manifest Migration Example"
+echo "=============================="
+cd manifest-migration
+./run-example.sh
+cd ..
+
+echo
 echo "🎉 All examples completed successfully!"
 echo "======================================="

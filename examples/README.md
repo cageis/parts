@@ -11,6 +11,9 @@ This directory contains practical examples demonstrating how to use Parts with d
 - `sql/` - SQL script merging (dash comments)  
 - `python/` - Python configuration (auto-detection)
 - `batch/` - Windows batch file merging (rem comments)
+- `manifest-dotfiles/` - Multi-target manifest with merge + own modes
+- `manifest-sync-workflow/` - Bidirectional sync between target and partials
+- `manifest-migration/` - Migration from legacy CLI to manifest mode
 
 ## Running Examples
 
