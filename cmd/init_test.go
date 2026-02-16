@@ -5,6 +5,8 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"gopkg.in/yaml.v3"
 )
 
 func TestInitCommand_CreatesManifest(t *testing.T) {
@@ -58,5 +60,30 @@ func TestInitCommand_DoesNotOverwrite(t *testing.T) {
 	content, _ := os.ReadFile(manifestPath)
 	if string(content) != "existing content" {
 		t.Error("Existing manifest should not be overwritten")
+	}
+}
+
+func TestInitCommand_GeneratedManifestIsParseable(t *testing.T) {
+	dir := t.TempDir()
+	origDir, _ := os.Getwd()
+	defer os.Chdir(origDir)
+	os.Chdir(dir)
+
+	cmd := newInitCmd()
+	cmd.SetArgs([]string{})
+	if err := cmd.Execute(); err != nil {
+		t.Fatalf("Init failed: %v", err)
+	}
+
+	// The skeleton YAML should be parseable (even though all targets are commented out,
+	// it should parse without errors — it just won't have valid targets)
+	content, _ := os.ReadFile(filepath.Join(dir, ".parts.yaml"))
+	var parsed map[string]interface{}
+	if err := yaml.Unmarshal(content, &parsed); err != nil {
+		t.Fatalf("Generated skeleton is not valid YAML: %v", err)
+	}
+
+	if _, ok := parsed["defaults"]; !ok {
+		t.Error("Skeleton should have a 'defaults' key")
 	}
 }
