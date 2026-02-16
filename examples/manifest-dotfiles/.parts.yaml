@@ -1,0 +1,18 @@
+defaults:
+  comment: "auto"
+
+targets:
+  ssh:
+    target: ./output/ssh-config
+    partials: ./ssh/
+    comment: "#"
+    mode: merge
+  bashrc:
+    target: ./output/bashrc
+    partials: ./bash/
+    comment: "#"
+    mode: own
+  gitconfig:
+    target: ./output/gitconfig
+    partials: ./git/
+    mode: own

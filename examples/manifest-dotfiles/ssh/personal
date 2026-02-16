@@ -1,0 +1,5 @@
+Host personal
+    HostName personal.example.com
+    User me
+    Port 22
+    IdentityFile ~/.ssh/id_personal
