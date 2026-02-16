@@ -251,6 +251,85 @@ func TestManifest_FilterTargets(t *testing.T) {
 	}
 }
 
+func TestLoadManifest_TildePaths(t *testing.T) {
+	dir := t.TempDir()
+	manifestPath := filepath.Join(dir, ".parts.yaml")
+
+	yaml := `targets:
+  ssh:
+    target: ~/.ssh/config
+    partials: ~/dotfiles/ssh/
+`
+	// Note: this tests that the YAML parser correctly reads tilde paths as strings.
+	// Actual tilde expansion happens at apply time, not parse time.
+	if err := os.WriteFile(manifestPath, []byte(yaml), 0644); err != nil {
+		t.Fatalf("Failed to write manifest: %v", err)
+	}
+
+	manifest, err := LoadManifest(manifestPath)
+	if err != nil {
+		t.Fatalf("Failed to load manifest with tilde paths: %v", err)
+	}
+
+	ssh := manifest.Targets["ssh"]
+	if ssh.Partials != "~/dotfiles/ssh/" {
+		t.Errorf("Expected tilde path preserved, got: %q", ssh.Partials)
+	}
+}
+
+func TestLoadManifest_EmptyTargetMap(t *testing.T) {
+	dir := t.TempDir()
+	manifestPath := filepath.Join(dir, ".parts.yaml")
+
+	yaml := `defaults:
+  comment: "#"
+targets:
+`
+	if err := os.WriteFile(manifestPath, []byte(yaml), 0644); err != nil {
+		t.Fatalf("Failed to write manifest: %v", err)
+	}
+
+	_, err := LoadManifest(manifestPath)
+	if err == nil {
+		t.Fatal("Expected error for empty targets section")
+	}
+	if !containsSubstring(err.Error(), "no targets defined") {
+		t.Errorf("Expected 'no targets defined' error, got: %v", err)
+	}
+}
+
+func TestLoadManifest_SpecialTargetNames(t *testing.T) {
+	dir := t.TempDir()
+	manifestPath := filepath.Join(dir, ".parts.yaml")
+
+	yaml := `targets:
+  ssh-config:
+    target: /tmp/ssh
+    partials: ./ssh/
+  vim_rc:
+    target: /tmp/vim
+    partials: ./vim/
+  git.config:
+    target: /tmp/git
+    partials: ./git/
+`
+	if err := os.WriteFile(manifestPath, []byte(yaml), 0644); err != nil {
+		t.Fatalf("Failed to write manifest: %v", err)
+	}
+
+	manifest, err := LoadManifest(manifestPath)
+	if err != nil {
+		t.Fatalf("Failed to load manifest with special target names: %v", err)
+	}
+
+	expected := []string{"ssh-config", "vim_rc", "git.config"}
+	for _, name := range expected {
+		if _, ok := manifest.Targets[name]; !ok {
+			t.Errorf("Expected target '%s' to be parsed", name)
+		}
+	}
+}
+
 // containsString is a test helper
 func containsString(s, substr string) bool {
 	return len(s) >= len(substr) && (s == substr || len(s) > 0 && containsSubstring(s, substr))
