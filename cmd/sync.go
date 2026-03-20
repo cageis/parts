@@ -27,7 +27,7 @@ partial files.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			manifestPath := syncManifestPath
 			if manifestPath == "" {
-				manifestPath = ".parts.yaml"
+				manifestPath = resolveManifestPath()
 			}
 
 			absManifest, err := filepath.Abs(manifestPath)

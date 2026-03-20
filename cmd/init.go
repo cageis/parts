@@ -36,6 +36,9 @@ targets:
   #   mode: own         # entire file is written from partials
 `
 
+// initManifestPath allows tests to override the manifest location
+var initManifestPath string
+
 func newInitCmd() *cobra.Command {
 	var fromArgs []string
 	var targetName string
@@ -113,19 +116,26 @@ func runInitFrom(fromArgs []string, name, mode string) error {
 		return fmt.Errorf("'%s' is not a directory", partialsDir)
 	}
 
+	// Normalize paths: convert relative paths to absolute, then shorten $HOME to ~/
+	partialsDir = normalizePath(partialsDir, expandedPartials)
+	targetFile = normalizeTargetPath(targetFile)
+
 	// Derive name if not provided
 	if name == "" {
 		name = deriveTargetName(targetFile)
 	}
 
-	manifestPath := ".parts.yaml"
+	manifestPath := initManifestPath
+	if manifestPath == "" {
+		manifestPath = resolveManifestPath()
+	}
 
 	if _, err := os.Stat(manifestPath); os.IsNotExist(err) {
-		// Create new manifest
+		// No manifest found anywhere — create in cwd
 		return createManifestWithTarget(manifestPath, name, targetFile, partialsDir, commentStyle, mode)
 	}
 
-	// Append to existing manifest
+	// Append to existing manifest (cwd or ~/.parts.yaml)
 	return appendTargetToManifest(manifestPath, name, targetFile, partialsDir, commentStyle, mode)
 }
 
@@ -199,6 +209,63 @@ func createManifestWithTarget(path, name, target, partials, comment, mode string
 
 	fmt.Printf("Created %s with target '%s'\n", path, name)
 	return nil
+}
+
+// normalizePath converts a path to use ~/ when it falls under the user's home directory.
+// It takes the original user-provided path and the already-expanded absolute path.
+func normalizePath(original, expanded string) string {
+	// Already uses tilde — leave as-is
+	if strings.HasPrefix(original, "~/") || original == "~" {
+		return original
+	}
+
+	// Resolve to absolute if relative
+	abs := expanded
+	if !filepath.IsAbs(abs) {
+		if resolved, err := filepath.Abs(abs); err == nil {
+			abs = resolved
+		}
+	}
+
+	// Shorten to ~/ if under home directory
+	usr, err := os.UserHomeDir()
+	if err != nil {
+		return original
+	}
+
+	if strings.HasPrefix(abs, usr+"/") {
+		return "~/" + strings.TrimPrefix(abs, usr+"/")
+	}
+	if abs == usr {
+		return "~"
+	}
+
+	return abs
+}
+
+// normalizeTargetPath converts a target file path to use ~/ when under $HOME.
+func normalizeTargetPath(path string) string {
+	if strings.HasPrefix(path, "~/") || path == "~" {
+		return path
+	}
+
+	abs := path
+	if !filepath.IsAbs(abs) {
+		if resolved, err := filepath.Abs(abs); err == nil {
+			abs = resolved
+		}
+	}
+
+	usr, err := os.UserHomeDir()
+	if err != nil {
+		return path
+	}
+
+	if strings.HasPrefix(abs, usr+"/") {
+		return "~/" + strings.TrimPrefix(abs, usr+"/")
+	}
+
+	return abs
 }
 
 func appendTargetToManifest(path, name, target, partials, comment, mode string) error {

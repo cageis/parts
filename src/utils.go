@@ -2,23 +2,24 @@ package src
 
 import (
 	"fmt"
+	"os"
 	"os/user"
 	"path/filepath"
 	"strings"
 )
 
 // ExpandTildePrefix expands ~ and ~/ in file paths to the user's home directory.
+// When running under sudo, it uses the invoking user's home directory (via SUDO_USER).
 // Returns an error if the current user cannot be determined.
 func ExpandTildePrefix(path string) (string, error) {
 	if !strings.HasPrefix(path, "~") {
 		return path, nil
 	}
 
-	usr, err := user.Current()
+	homeDir, err := resolveHomeDir()
 	if err != nil {
-		return "", fmt.Errorf("failed to get current user for path expansion: %w", err)
+		return "", err
 	}
-	homeDir := usr.HomeDir
 
 	if path == "~" {
 		return homeDir, nil
@@ -40,4 +41,22 @@ func MustExpandTildePrefix(path string) string {
 		panic(err)
 	}
 	return expanded
+}
+
+// resolveHomeDir returns the home directory of the invoking user.
+// When running under sudo, it looks up the SUDO_USER's home directory
+// so that ~ expands to the real user's home, not root's.
+func resolveHomeDir() (string, error) {
+	if sudoUser := os.Getenv("SUDO_USER"); sudoUser != "" {
+		u, err := user.Lookup(sudoUser)
+		if err == nil {
+			return u.HomeDir, nil
+		}
+	}
+
+	usr, err := user.Current()
+	if err != nil {
+		return "", fmt.Errorf("failed to get current user for path expansion: %w", err)
+	}
+	return usr.HomeDir, nil
 }

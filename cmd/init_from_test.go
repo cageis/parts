@@ -15,6 +15,9 @@ func TestInitFrom_CreatesNewManifest(t *testing.T) {
 	defer os.Chdir(origDir)
 	os.Chdir(dir)
 
+	initManifestPath = filepath.Join(dir, ".parts.yaml")
+	defer func() { initManifestPath = "" }()
+
 	// Create partials directory with a partial file
 	partialsDir := filepath.Join(dir, "ssh")
 	os.MkdirAll(partialsDir, 0755)
@@ -32,7 +35,7 @@ func TestInitFrom_CreatesNewManifest(t *testing.T) {
 	}
 
 	// Verify manifest was created
-	content, err := os.ReadFile(".parts.yaml")
+	content, err := os.ReadFile(initManifestPath)
 	if err != nil {
 		t.Fatalf("Manifest not created: %v", err)
 	}
@@ -44,8 +47,9 @@ func TestInitFrom_CreatesNewManifest(t *testing.T) {
 	if !strings.Contains(contentStr, targetFile) {
 		t.Error("Manifest should contain target file path")
 	}
-	if !strings.Contains(contentStr, "./ssh") {
-		t.Error("Manifest should contain partials directory")
+	// Path is normalized to absolute since temp dir is outside $HOME
+	if !strings.Contains(contentStr, partialsDir) {
+		t.Errorf("Manifest should contain partials directory %q, got:\n%s", partialsDir, contentStr)
 	}
 }
 
@@ -54,6 +58,9 @@ func TestInitFrom_AppendsToExisting(t *testing.T) {
 	origDir, _ := os.Getwd()
 	defer os.Chdir(origDir)
 	os.Chdir(dir)
+
+	initManifestPath = filepath.Join(dir, ".parts.yaml")
+	defer func() { initManifestPath = "" }()
 
 	// Create initial manifest with one target
 	partialsDir1 := filepath.Join(dir, "ssh")
@@ -121,6 +128,9 @@ func TestInitFrom_ExplicitName(t *testing.T) {
 	defer os.Chdir(origDir)
 	os.Chdir(dir)
 
+	initManifestPath = filepath.Join(dir, ".parts.yaml")
+	defer func() { initManifestPath = "" }()
+
 	partialsDir := filepath.Join(dir, "partials")
 	os.MkdirAll(partialsDir, 0755)
 	os.WriteFile(filepath.Join(partialsDir, "part1"), []byte("content\n"), 0644)
@@ -162,6 +172,9 @@ func TestInitFrom_DuplicateTargetName(t *testing.T) {
 	defer os.Chdir(origDir)
 	os.Chdir(dir)
 
+	initManifestPath = filepath.Join(dir, ".parts.yaml")
+	defer func() { initManifestPath = "" }()
+
 	partialsDir := filepath.Join(dir, "ssh")
 	os.MkdirAll(partialsDir, 0755)
 	os.WriteFile(filepath.Join(partialsDir, "work"), []byte("Host work\n"), 0644)
@@ -190,6 +203,9 @@ func TestInitFrom_GeneratedManifestIsUsable(t *testing.T) {
 	origDir, _ := os.Getwd()
 	defer os.Chdir(origDir)
 	os.Chdir(dir)
+
+	initManifestPath = filepath.Join(dir, ".parts.yaml")
+	defer func() { initManifestPath = "" }()
 
 	// Create partials
 	partialsDir := filepath.Join(dir, "ssh")

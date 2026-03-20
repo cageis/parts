@@ -29,7 +29,7 @@ For 'own' mode targets, the target file is deleted entirely.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			manifestPath := manifestRemovePath
 			if manifestPath == "" {
-				manifestPath = ".parts.yaml"
+				manifestPath = resolveManifestPath()
 			}
 
 			absManifest, err := filepath.Abs(manifestPath)

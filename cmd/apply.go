@@ -33,7 +33,7 @@ If no target names are specified, all targets are applied.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			manifestPath := applyManifestPath
 			if manifestPath == "" {
-				manifestPath = ".parts.yaml"
+				manifestPath = resolveManifestPath()
 			}
 
 			absManifest, err := filepath.Abs(manifestPath)

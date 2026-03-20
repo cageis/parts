@@ -22,21 +22,23 @@ func TestWorkflow_InitFromApplyRemoveRoundTrip(t *testing.T) {
 	targetFile := filepath.Join(dir, "config")
 	os.WriteFile(targetFile, []byte("# My SSH config\nHost personal\n    User me\n"), 0644)
 
+	// Override manifest path for all commands
+	manifestPath := filepath.Join(dir, ".parts.yaml")
+	initManifestPath = manifestPath
+	applyManifestPath = manifestPath
+	manifestRemovePath = manifestPath
+	defer func() {
+		initManifestPath = ""
+		applyManifestPath = ""
+		manifestRemovePath = ""
+	}()
+
 	// Step 1: init --from
 	initCmd := newInitCmd()
 	initCmd.SetArgs([]string{"--from", targetFile, "--from", partialsDir, "--from", "#", "--name", "ssh"})
 	if err := initCmd.Execute(); err != nil {
 		t.Fatalf("init --from failed: %v", err)
 	}
-
-	// Override manifest path for apply/remove commands
-	manifestPath := filepath.Join(dir, ".parts.yaml")
-	applyManifestPath = manifestPath
-	manifestRemovePath = manifestPath
-	defer func() {
-		applyManifestPath = ""
-		manifestRemovePath = ""
-	}()
 
 	// Step 2: apply
 	applyCmd := newApplyCmd()
